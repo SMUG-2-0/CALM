@@ -1,1 +1,3 @@
-# CALM - Common Assembly Language for Microprocessors
+# CALM
+
+Common Assembly Language for Microprocessors
