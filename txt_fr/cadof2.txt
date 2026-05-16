@@ -1,0 +1,473 @@
+     CALMDEF.DOQ                                          CALM Définitions
+     
+     BUT ET DOMAINE D'APPLICATION
+        CALM fixe les notations pour des programmes en langage
+     d'assemblage, qui sont utilisables pour des processeurs d'une taille
+     des mots de données et d'adresses quelconque et qui sont basés sur une
+     architecture de "von-Neumann". Ces notations décrivent à l'aide de
+     verbes anglais l'opération à effectuer. Mais aussi des architectures
+     plus complexes et futures sont prévues.
+        CALM fixe les noms mnémotechniques et la syntaxe des opérations,
+     conditions de test, registres spéciaux, types de données, modes
+     d'adressage et pseudo-instructions les plus utilisés.
+        La notation CALM décrit précisément tous les instructions d'un
+     processeur. S'il y a pour une opération plusieurs (mais
+     fonctionellement identiques) instructions au choix (p.ex. adressage
+     absolu et relatif), CALM offre d'une part une notation explicite et
+     précise pour chacune de ces instructions et d'autre part une notation
+     simplifiée, qui laisse à l'assembleur le choix de l'instruction.
+        CALM laisse une très grande liberté de mise en page, mais permet et
+     encourage une présentation claire et modulaire des programmes. CALM
+     tient aussi en compte des affichages et imprimantes futurs. Des
+     modules et les pseudo-instructions associées sont aussi prévues et
+     permettent ainsi le lien avec des langages de programmation évolués.
+        CALM ne définit pas de format binaire pour le programme objet, mais
+     recommande la norme P695. CALM a été normalisé dans DIN 66283.
+     
+     TERMES
+        Les termes utilisés correspondent aux significations comme elles
+     sont utilisées par les fabricants de microprocesseurs.
+        Les diagrammes de syntaxe font foi et correspondent aux règles
+     usuelles comme ils sont utilisés par exemple dans le langage Pascal.
+     Des cercles et des rectangles avec des demi-cercles se réfèrent à des
+     éléments de base (caractère ou mots-clés). Des rectangles se réfèrent
+     à des éléments définis ailleurs. Un symbole entre parenthèses pointues
+     (<>) indique la valeur de ce symbole, p.ex. <CR>.
+        Les nombres décimaux sont appelés ici simplement nombres. Ces
+     nombres restent aussi comme indicateurs supplémentaires décimaux, même
+     si la base par défaut a été changée.
+     
+     JEU DE CARACTERES
+        Le jeu de caractères est basé sur le jeu de caractères ASCII
+     complét. Il se compose de caractères imprimables et non imprimables.
+     
+     CARACTERES IMPRIMABLES
+        * Lettres
+        - obligatoire: A..Z
+        - facultatif:  a..z
+          Les lettres minuscules et majuscules dans les symboles et les
+          noms des registres réservés sont traitées identiques.
+        * Chiffres
+        - obligatoire: 0..9
+        * Signes:
+        - obligatoire:
+          +        signe plus               -       signe moins
+          *        astérisque               /       barre oblique
+          .        point                    ,       virgule
+          :        deux-points              =       signe égal
+          ;        point-virgule            _       souligné
+          $        signe dollar             #       dièze
+          '        apostrophe               "       guillemets
+          ^        accent circonflexe       |       barre verticale
+          %        signe pourcent           ()      parenthèses
+          {}       accolades                <>      parenthèses pointues
+          <ESPACE> espace                   <TAB>   tabulateur horizontale
+     
+     CALM Définitions                                             page: 2
+     
+        - utilisable facultativement dans des commentaires:
+          &    signe "et"               !    point d'exclamation
+          ?    point d'interrogation    @    signe "at"
+          `    accent grave             ~    tilde
+          []   crochets                 \   barre oblique en arrière
+          Remarque: La barre oblique en arrière ou caractère
+          d'échappement typographique permet l'extension du jeu de
+          caractères par des caractères spéciaux, graphiques et
+          typographiques. La compatibilité entre un écran ou une
+          imprimante à chasse fixe et d'une unité avec chasse variable et
+          des tabulateurs librement positionnables peut être atteinte par
+          des pseudo-tabulateurs (\<TAB>).
+        * Caractères non ASCII
+        Des caractères avec accents ou d'autres signes spéciaux sont
+        utilisables dans des commentaires s'il n'y a pas de contradiction
+        avec les caractères définis ci-dessus.
+     
+     CARACTERES NON IMPRIMABLES
+        * caractères de commande
+          <CR>     fin de ligne
+          <NULL>   vide
+        Tous les autres caractères de commande sont ignorés.
+     
+     PROGRAMME EN ASSEMBLEUR ET ORDRES
+        Un programme en langage d'assemblage est une suite finie d'ordres.
+     Chaque ordre peut avoir jusqu'à 255 caractères et est terminé par un
+     caractère de retour de chariot <CR>. L'ordre END termine un programme
+     en langage d'assemblage. Le diagramme de syntaxe d'un programme en
+     langage d'assemblage est donné à la fig. 1.
+        Le diagramme de syntaxe d'un ordre est illustré à la fig. 2.
+     
+     programme en langage d'assemblage
+                            /---------------<---------------,
+                            |                               |
+                            |   -------------     ------    |
+        ------------------------[  ordre    ]--->( <CR> )---'
+                              | -------------     ------
+                              |
+                              |  -----------------
+                              `->[  ordre END    ]
+                                 ----------------- ordre END
+            --------     ------     --------    ---------------     ------
+        --->[ s.f. ]--->( .END )--->[ s.f. ]--->[ commentaire ]--->( <CR> )
+            --------     ------     -------- |  --------------- |   ------
+                                             |                  |
+                                             `--------->--------'
+        s.f.: séparateur facultatif
+     
+                                     Fig. 1
+     
+     CALM Définitions                                             page: 3
+     
+     ordre
+                               ---------------
+        /--------------------->[ assignation ]-,
+        |                      --------------- |
+        | /------<------,                      |
+        | |             |      --------------- |
+        | |             |   /->[ pseudoinstr.]-|
+        | |   ---------*|   |  --------------- |  ------    -----------
+        ----->[ étiqu.]-----|                  |->[s.f.]--->[comment. ]--->
+           |  ---------   | |  --------------- |  ------ |  ----------- |
+           |              | `->[ instruction ]-|         |              |
+           |--------->----'    --------------- |         `------->------'
+           |                                   |
+           `------------------>----------------'
+     
+     étiquette
+                             ---------------------
+                          /->[ étiquette globale ]-,
+               --------   |  --------------------- |
+        ------>[ s.f. ]---|                        |--->
+               --------   |  --------------------- |
+                          `->[ étiquette locale  ]-'
+                             ---------------------
+     
+     commentaire
+                       /-------------<---------------,
+                       |                             |
+                  ---  |      --------------------   |
+        -------->( ; )----->( caractère imprimable )-'
+                  ---    |    --------------------
+                         |
+                         `----------------------------->
+     
+        * pour quelques pseudo-instructions des étiquettes ne sont pas
+          admises.
+     
+                                     Fig. 2
+     
+     SEPARATEURS
+        Un séparateur est une suite non vide d'espaces ou/et de
+     tabulateurs. Dans la pratique, on utilise qu'un espace ou qu'un
+     tabulateur. Le diagramme de syntaxe est présenté à la fig. 3a.
+        Le diagramme de syntaxe d'un séparateur facultatif (s.f.) est donné
+     à la fig. 3b.
+     
+     sépa
+           /------------------<-------------------,
+           |                                      |
+           |      --------                        |
+        ------->( <ESPACE> )------------->----------------->
+             |    --------                        |
+             |                                    |
+             |   -------                          |
+             `->( <TAB> )------------->-----------|
+                 -------  |                       |
+                          V /---------<---------, ^
+                          | |                   | |
+                          | |   ---    -------  | |
+                          `--->( \ )->( <TAB> )---'
+                                ---    -------
+     
+                                     Fig. 3a
+     
+     CALM Définitions                                             page: 4
+     
+        s.f.
+                  ---------
+        --------->[ sépa  ]----->
+               |  --------- |
+               |            |
+               `------>-----'
+     
+                   Fig. 3b
+     
+     CONSTANTES NON SIGNEES
+        Des constantes non signées sont des p-nombres ou des codes
+     caractères. Elles sont mémorisées à l'intérieur de l'assembleur avec
+     une résolution de 128 bits. La fig. 4 montre le diagramme de syntaxe.
+     
+     constante non signée
+                                             ------------
+                              /------------->[ p-nombre ]-------------,
+                              |              ------------             |
+                              |                                       |
+                              |  ---------------   ---   ------------ V
+        ------------------------>[ nombre (=p) ]->( ' )->[ p-nombre ]----->
+                              |  ---------------   ---   ------------ ^
+                              |                                       |
+                              |         ---------------------         |
+                              `-------->[ code de caractère ]---------'
+                                        ---------------------
+     
+                                     Fig. 4
+     
+     P-NOMBRES
+        Un p-nombre est un nombre entier positif de la base p avec 2 <= p
+     <= 16. Les p-chiffres correspondants sont pris de la liste ordonnée
+     0..9, A..F. Le diagramme de syntaxe est donné à la fig. 5.
+        Si la base par défaut n'est pas p, on peut précéder le nombre
+     explicitement par la base:
+     
+             p=2     (binaire)       2'          p.ex.:   2'11110001
+             p=8     (octal)         8'          p.ex.:   8'361
+             p=10    (décimal)      10'          p.ex.:  10'241
+             p=16    (sexadécimal)  16'          p.ex.:  16'F1
+     
+        La base par défaut est initialisée comme étant la base 10 dans
+     l'assembleur CALM. Si la base est supérieure à 10 et aucun préfixe est
+     utilisé, alors le premier chiffre d'un nombre doit être un chiffre
+     décimal. Ainsi un zéro non significatif doit être placé devant le
+     p-nombre, si le premier p-chiffre est une lettre (p.ex. 0FF).
+     
+     p-nombre              /-----<-----,
+                           |           |
+            p<=10          V   ------  |
+              /-------------->( 0..  )-----------,
+              |                ------            |
+              |                                  |
+        ------|             /-------<--------,   |--->
+              |             |                |   |
+              |   ------    V   -----------  |   |
+              `->( 0..9 )----->( 0..9,A..  )-----'
+            p>10  ------  |     -----------    ^
+                          |                    |
+                          `--------->----------'
+     
+                                     Fig. 5
+     
+     CALM Définitions                                             page: 5
+     
+     CODE CARACTERE
+        Un caractère imprimable entre guillemets fournit le code ASCII de
+     ce caractère. Le diagramme de syntaxe est donné à la fig. 6.
+        Exemple: "A" fournit 16'41 et avec """" on obtient le code ASCII
+     16'22 des guillemets.
+     
+     code caractère
+                    ---       ------------------------------       ---
+        ---------->( " )--->(  caractère imprimable, sauf "  )--->( " )--->
+                    ---  |    ------------------------------   ^   ---
+                         |        ---              ---         |
+                         `------>( " )----------->( " )--------'
+                                  ---              ---
+     
+                                     Fig. 6
+     
+     NOMBRE POINT FLOTTANT
+        Le diagramme de syntaxe de nombres point flottant est donné à la
+     figure 7. On suppose le format IEEE P754.
+        L'assembleur utilise internement le format P754 80 bits. La valeur
+     d'un nombre point flottant sera convertie dans le format de 64 ou 32
+     bits quand la valeur est utilisée dans une instruction.
+        Les nombres point flottant sont seulement utilisables comme valeurs
+     immédiates. Le traitement de nombres point flottant dans des
+     expressions n'est pas demandé en CALM.
+        Exemple: -300.0 ou -3E+2.
+        Remarque: Nous utilisons ici le terme nombre point flottant (au
+     lieu nombre virgule flottant), car il faut bien utiliser un point.
+     
+     nombre point flottant
+                                        /--------------->----------------,
+                                        |                                |
+             -                          |                   -            |
+         /->(+)-,                       |               /->(+)-,         |
+         |   -  |                       |               |   -  |         |
+         |      |  ------    -   ------ |       -       |      |  ------ V
+        ----->---->[c.n.]-->(.)->[c.n.]------->(E)---------->---->[c.n.]-->
+         |      |  ------ |  -   ------  ^|     -     ^ |      |  ------
+         |   -  |         |              ||   -    -  | |   -  |
+         `->(-)-'         `------>-------'`->(\)->(E)-' `->(-)-'
+             -                                -    -        -
+        c.n.: constante non-signée
+     
+                                     Fig. 7
+     
+     SYMBOLES
+        Symboles ont un nom et une valeur. Le nom du symbole peut contenir
+     jusqu'à 32 caractères. L'assembleur mémorise la valeur du symbole avec
+     une longueur de mot de 256 bits. Les lettres minuscules sont
+     équivalentes aux lettres majuscules correspondantes.
+        Le diagramme de syntaxe d'un nom de symbole est donné à la fig. 8.
+        Il y a trois types de symboles:
+     
+             - symboles réservés
+             - symboles prédéfinis
+             - symboles définis par l'utilisateur
+     
+     CALM Définitions                                             page: 6
+     
+     nom du symbole
+                                   /----------<---------,
+                                   |                    |
+                       ---------   V      ---------     |
+        ------------>(   lettre  )----->(   lettre  )---|
+                       ---------     |    ---------     |
+                                     |                  |
+                                     |      -------     |
+                                     |--->( chiffre )---|
+                                     |      -------     |
+                                     |                  |
+                                     |        ---       |
+                                     |------>( _ )------'
+                                     |        ---
+                                     |
+                                     `---------------------->
+     
+                                     Fig. 8
+     
+     SYMBOLES RESERVES
+        Les symboles réservés désignent des registres spéciaux. S'il ne
+     faut pas respecter une architecture particulière, les noms suivants
+     sont réservés:
+     
+        PC   le compteur d'adresses au moment de l'exécution du programme
+             (Program Counter)
+        SP   le pointeur de pile (Stack Pointer)
+        F    le registre d'indicateurs arithmétique (Flags)
+        S    le registre d'état (System, Status)
+     
+     Les noms des registres doivent correspondre à ceux du fabricant.
+     Tableau 1 montre les noms des registres choisis en CALM pour quelques
+     processeurs.
+     
+        Z80:
+        Zilog:          F      A     BC     DE     HL     IX     IY     SP
+        CALM:           F      A     BC     DE     HL     IX     IY     SP
+        6809:
+        Motorola:      CC      D      X      Y      S      U     DP
+        CALM:           F     AB     IX     IY     SS     US      P
+        68000:
+        Motorola:     CCR     SR     D0..D7         A0..A7         A7
+        CALM:           F     SF     D0..D7         A0..A7         A7 = SP
+     
+                                     Tab. 1
+     
+     SYMBOLES PREDEFINIS
+        Il y a trois types de symboles prédéfinis:
+     
+        * obligatoire:
+         APC        =   la valeur du compteur d'adresses de l'asembleur au
+                        début de l'instruction dans laquelle APC apparaît
+         TRUE       =   -1      (tous les bits à 1)
+         FALSE      =   0       (tous les bits à 0) * facultatif:
+         SYSTIME    =   0 h m s         (32 bits BCD)
+         SYSDATE    =   0 a m j         (32 bits BCD)
+         FLOATPI    =   nombre pi
+         FLOATE     =   nombre e
+        * défini dans l'assembleur: à éviter
+     
+     CALM Définitions                                             page: 7
+     
+     SYMBOLES DEFINIS PAR L'UTILISATEUR
+        Un symbole défini par l'utilisateur est introduit explicitement par
+     le programmeur. Ce symbole désigne une constante ou une adresse
+     mémoire et possède des attributs supplémentaires cachés, qui aident à
+     l'assemblage et permettent la détection d'erreurs. On ne peut pas
+     utiliser des symboles réservés ou prédéfinis.
+        Il y a quatre types de symboles définis par l'utilisateur:
+     
+             - étiquette globale
+             - étiquette locale
+             - assignation
+             - pseudo-instruction IMPORT
+     
+     ETIQUETTE GLOBALE
+        Une étiquette globale est un symbole qui est défini dans le champ
+     d'étiquette d'un ordre d'assembleur. La valeur de l'étiquette est
+     donnée par la valeur du compteur d'adresses de l'assembleur. Une
+     étiquette globale est valable dans le programme entier.
+        Le diagramme de syntaxe est illustré à la figure 9.
+     
+     étiquette globale
+                           ------------------     ---
+        ------------------>[ nom du symbole ]--->( : )--->
+                           ------------------     ---
+     
+                                     Fig. 9
+     
+     ETIQUETTE LOCALE
+        Une étiquette locale existe seulement entre deux étiquettes
+     globales. La longueur du nom du symbole est limitée à 8 caractères. Le
+     diagramme de syntaxe est donné à la figure 10.
+     
+     étiquette locale
+                           ------------------     ---      ---
+        ------------------>[ nom du symbole ]--->( $ )--->( : )--->
+                           ------------------     ---      ---
+     
+                                     Fig. 10
+     
+     ASSIGNATION
+        Un symbole est défini par le signe égal (=). La partie droite de
+     l'assignation est une expression ou un nombre point flottant. Le
+     diagramme de syntaxe est donné à la figure 11.
+     
+        assignation
+                                                      ------------
+                                                /---->[expression]-----,
+            ------  ------  ------   -   ------ |     ------------     |
+        --->[s.f.]->[n.s.]->[s.f.]->(=)->[s.f.]-|                      |-->
+            ------  ------  ------   -   ------ |  ------------------- |
+                                                `->[nombre point flot]-'
+                                                   -------------------
+     
+        n.s.: nom du symbole
+                                     Fig. 11
+     
+     CALM Définitions                                             page: 8
+     
+     LA PSEUDO-INSTRUCTION IMPORT
+        Une pseudo-instruction IMPORT déclare les symboles définis dans
+     d'autres modules de programme. Le nom réservé .IMPORT est suivi par
+     une liste de symboles. Le diagramme de syntaxe est donné à la fig. 12.
+     Les valeurs des symboles sont inconnues au moment de l'assemblage.
+     
+     pseudo-instruction IMPORT                     ------   ---   ------
+                                                 /-[s.f.]<-( , )<-[s.f.]-,
+                                                 | ------   ---   ------ |
+                                                 |                       |
+            --------     ---------     --------- V   ------------------  |
+        --->[ s.f. ]--->( .IMPORT )--->[ sépa  ]---->[ nom du symbole ]--->
+            --------     ---------     ---------     ------------------
+     
+                                     Fig. 12
+     
+     EXPRESSIONS
+        Les expressions avec les opérateurs de plus haute priorité sont
+     évaluées en premier. L'évaluation se fait de gauche à droite pour des
+     opérateurs de priorité égale. On peut changer la priorité avec des
+     parenthèses.
+        Le diagramme de syntaxe est donné à la fig. 13. Les opérateurs sous
+     facteur ont la plus haute priorité, les opérateurs de comparaison la
+     plus faible.
+        Opérateurs avec un opérande (opérateurs monadiques):
+        +          positif
+        -          negatif (complément à deux)
+        .BIT.      équivalent à 1.sl.facteur ou 2**facteur
+        .DEFINED.  retourne TRUE si symbole est défini sinon FALSE
+        .EQ0.      négation logique (0 -> TRUE, <>0 -> FALSE)
+        .HIGH8.    équivalent à (facteur.sr.8).and.16'FF
+        .HIGH16.   équivalent à (facteur.sr.16).and.16'FFFF
+        .LOG2.     retourne 0..31 si facteur = 1..16'FFFFFFFF (0 = erreur)
+        .LOW8.     équivalent à facteur.and.16'FF
+        .LOW16.    équivalent à facteur.and.16'FFFF
+        .NOT.      complément (complément à un)
+        .SQR.      équivalent à facteur*facteur
+        .SQRT.     retourne la racine carrée (facteur = 0..16'7FFFFFFF)
+        Opérateurs avec deux opérandes (opérateurs diadiques):
+        +          addition
+        -          soustraction
+        *          multiplication
+        **         élever à une puissance
+        /          division (ou .DIV.)
+      

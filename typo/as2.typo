@@ -1,0 +1,109 @@
+\fichier:as2\importe:as\haut:Assembleur CALM\cpage=16;\define p:\ur08;\define g:\ur10;\num;Les pseudo-instructions\a:Une pseudoinstruction est une commande pour l'assembleur et ne dpend pas 
+du type de processeur. Toutes les pseudoinstructions commencent par un point. 
+Les pseudoinstructions avec plusieurs paramtres doivent tre 
+spares par une virgule, un espace ou un tabulateur. \a:Il est possible d'initialiser des positions mmoire sans chargement d'un 
+module processeur. Dans ce cas l'arrangement des bytes suit la philosophie 
+du processeur 68000 de Motorola (most significant byte en premier).\snum;Liste des pseudoinstructions\a:Le compteur des adresses de l'assembleur est abrg par PCASS dans les 
+explications suivantes.\newtab 20mm,35mm;\g;\cadre:.ALIGN	valeur|	le PCASS est ajust  la prochaine adresse multiple de <valeur>	Exemple:\p;	.ALIGN	D'256\g;\cadre:.ASCII	<dlimiteur>texte<dlimiteur>|	mmorise le texte ascii. Le dlimiteur peut tre un caractre 
+ASCII quelconque, mais ne peut pas tre dans le texte. Une valeur 
+quelconque est mmorisable par: '<'<simple expression>'>'.	Exemple:\p;	.ASCII	"0123456789ABCDEF"\g;\cadre:.ASCIZ	<dlimiteur>texte<dlimiteur>|	mmorise le texte ascii. Le dlimiteur peut tre un caractre 
+ASCII quelconque, mais ne peut pas tre dans le texte. Une valeur 
+quelconque est mmorisable par: '<'<simple expression>'>'. Un zro (0) est 
+ajout au code.	Exemple:\p;	.ASCIZ	"<CR>Donnez un nombre: "\g;\cadre:.ASCIZE	<dlimiteur>texte<dlimiteur>|	quivalent  .ASCIZ suivi de .EVEN.\g;\cadre:.BASE	valeur|	change la base par dfaut, avec laquelle tous les nombres sont 
+traits. Il faut exprimer la base future (<valeur>) dans la base actuelle 
+ou dans une des quatre suivantes: B', O', D' ou H'. La base par dfaut est 
+le dcimal.	Exemple:\p;	.BASE	D'16\g;\cadre:.BLK.8	valeur|	rserve <valeur> bytes (8 bit) sans les initialiser. Ajoute  
+PCASS <valeur>	Exemple:\p;	.BLK.8	LONG_VAR\g;\cadre:.BLK.16	valeur|	rserve <valeur> words (16 bit) sans les initialiser. Ajoute  
+PCASS 2*<valeur>\g;\cadre:.BLK.32	valeur|	rserve <valeur> longs (32 bit) sans les initialiser. Ajoute  
+PCASS 4*<valeur>\cadre:.BLK<expression> valeur|	rserve <valeur> fois <expression> sans les initialiser. 
+Expression est une combinaison quelconque de .8, .16 et .32. Ajoute  
+PCASS <valeur> fois <expression>	Exemple:\p;	.BLK.8.16.32.16	D'8\g;\cadre:.CHAP	texte|	provoque un saut de page et <texte> apparatra dans l'entte du 
+listing  chaque saut de page  droite du texte de .TITLE. C'est un 
+sous-titre.	Exemple:\p;	.CHAP	CALCUL DE LA RACINE CARREE\g;\cadre:.CODE	paramtres|	permet de changer quelques paramtres dans l'entte du fichier 
+.CODE. 	Les paramtres sont: longueur stack, priorit, units utilises, minx, 
+maxx, miny, maxy, niveau synth et gnrateur. 
+Ces paramtres sont utiliss par le systme Psos pour savoir comment un fichier 
+.CODE doit tre excut (taille de la fentre, stack  rserver, etc.). 
+Il faut sparer les paramtres par des virgules!	Rserv au spcialiste!	Exemple:\p;	.CODE	D'500,D'23,B'111,D'20,D'2000,D'20,D'2000,D'2,'*	.CODE	,D'10		; spcifie uniquement la priorit\g;\cadre:.ELSE|	est optionelle entre les pseudoinstructions .IF et .ENDIF et 
+permet  l'assembleur, selon le rsultat du .IF, de choisir entre les deux 
+parties  assembler.\cadre:.END|	termine le programme source. Toutes les instructions suivantes 
+sont ignores.\cadre:.ENDIF|	termine la pseudoinstruction .IF (ou .IF ... .ELSE)\cadre:.ENDNOLIST|	termine .NOLIST\cadre:.EVEN|	ajuste PCASS  une adresse paire (identique  .ALIGN 2). Le contenu 
+du byte ventuellement saut est alatoire (pas initialis).\cadre:.FILL.8	nombre,valeur|	initialise <nombre> bytes (8 bit) par <valeur> et avance le 
+PCASS de <nombre>	Exemple:\p;	.FILL.8	D'1024,H'FF\g;\cadre:.FILL.16	nombre,valeur|	initialise <nombre> words (16 bit) par <valeur> et avance le 
+PCASS de 2*<nombre>\cadre:.FILL.32	nombre,valeur|	initialise <nombre> longs (32 bit) par <valeur> et avance le 
+PCASS de 4*<nombre>\cadre:.FILL<expression>  nombre,valeur|	initialise <expression> bytes nombre fois par <valeur>. 
+Expression est une combinaison quelconque de .8, .16 et .32. Ajoute  
+PCASS <expression>*<nombre>	Exemple:\p;	.FILL.16.32	D'20,H'FFFF,D'2\g;\cadre:.IDENT	"texte"|	copie <texte> dans l'entte du binaire. La longueur maximale de 
+<texte> est de 128 caractres. Il est recommand de placer cette 
+pseudoinstruction au dbut d'un programme, <texte> contenant toutes les 
+indications o se trouve le source et le nom du responsable	Exemple:\p;	.IDENT	"ASSEMBLEUR 68000, P.Fh"\g;\cadre:.IF	cond|	permet l'assemblage condionnel. Si <cond> est diffrent de zro, 
+les instructions entre .IF et .ENDIF (ou .ELSE) sont assembles. 8 niveaux 
+d'imbrication sont possibles.	Exemple:\p;	.IF		DEBUG	MOVE.32		#R16^START,A1	; sera assembl si DEBUG<>0	.ELSE	MOVE.32		#R16^START,A0	MOVE.32		A0,A1	.ENDIF		DEBUG\g;\cadre:.INS	fichier.extension|	insre <fichier.extension> dans le source et l'assemble. S'il y 
+des erreurs dans ce fichier, elles sont affiches sur l'cran et insres 
+dans le fichier source, mais pas inscrites dans <fichier.ext>. Il peut se 
+terminer par .END. L'<extension> est optionnelle. Par dfaut on admet .ASM.	Exemple:\p;	.INS	PF:AS68000	; insre le fichier PF:AS68000.ASM\g;\cadre:.LINES	valeur|	change dans le listing le nombre de lignes par page  <valeur>. 
+Si <valeur> vaut zro aucun saut de page n'est forc aprs <valeur> lignes.\cadre:.LISTIF|	montre toutes les instructions, mme celles qui ne sont pas 
+assembles, dans le listing (pour les .IF/.ELSE/.ENDIF)\cadre:.LISTBASE	valeur|	imprime le code gnr avec les adresses et les donnes dans la 
+base <valeur>. Uniquement 8 (octal) et 16 (hexa) sont supports 
+actuellement.	Exemple:\p;	.LISTBASE	D'16\g;\cadre:.LISTHEX|	imprime le code gnr avec les adresses et les donnes en 
+hexadcimal\cadre:.LISTOCT|	imprime le code gnr avec les adresses et les donnes en 
+octal\cadre:.LOC	adresse|	le PCASS prend la valeur de l'adresse. 	Il faut mettre au minimum un .LOC H'1000 pour le moniteur du SMAKY8. 
+Les programmes indpendants de la position mmoire doivent commencer un .LOC 0.	Exemple:\p;	.LOC	H'0\g;\cadre:.NOLIST	cond|	si <cond> ne vaut pas zro, le listing des lignes suivantes 
+(jusqu'au .ENDNOLIST) est omis.	Exemple:\p;	.NOLIST	1	.INS	AS680PAR.ASM	; pas de listing de cette partie	.ENDNOLIST\g;\cadre:.ODD|	ajuste PCASS  une adresse impaire. Le contenu du byte 
+ventuellement saut est alatoire.\cadre:.PAGE|	provoque un saut de page dans le listing\cadre:.PC	valeur|	permet de dfinir jusqu' 8 parties de programmes assembles en 
+parallle (mais pas de recouvrement). .PC slectionne la partie 
+correspondante par valeur (1-8). Par exemple, pour initialiser la partie 1 
+ partir de l'adresse H'100 on crit: .PC 1 et  la prochaine ligne .LOC 
+H'100.\cadre:.PROC	processeur|	dfinit le processeur utilis pour les instructions suivantes. 
+L'assembleur charge un fichier dont le nom est donn par <processeur> avec 
+l'extension .BIN. 	Les processeurs actuellement disponibles sont: M68000 (CALM2 et CALM3), 
+I8086 (CALM3) et Z80 (CALM1).	Exemple:\p;	.PROC	M68000\g;\cadre:.REF	fichier|	charge une table de symboles externes avec le nom <fichier>. 	Par exemple charge .REF FOS les symboles du File Operating System du 
+SMAKY8, contenu dans le fichier FOS.SYMB.\cadre:.REV	rvmaj,rvmin|	charge la rvision du programme dans l'entte du binaire, 
+<rvmaj> reprsente la rvision majeure, rvmin la rvision mineure.	Exemple:\p;	.REV	1,2\g;\cadre:.START	valeur|	dfinit l'adresse de start du programme	Exemple:\p;	.START	DEBUT\g;\cadre:.STRING	<dlimiteur>texte<dlimiteur>|	mmorise le texte ascii. Le dlimiteur peut tre un caractre 
+ASCII quelconque, mais ne peut pas tre dans le texte. Une valeur 
+quelconque est mmorisable par: '<'<simple expression>'>'. Le premier byte 
+contient la longueur du texte ascii (0-255).	Exemple:\p;	.STRING	"Le premier byte contient la 
+longueur."\g;\cadre:.TITLE	texte|	provoque un saut de page et <texte> apparatra dans l'entte du 
+listing  chaque saut de page. C'est la premire pseudoinstruction d'un 
+programme et <texte> contient le nom du programme.	Exemple:\p;	.TITLE	ASSEMBLEUR 68000\g;\cadre:.8	valeur|	rserve un byte (8 bit) et l'initialise  <valeur>. 	Le PCASS est incrment de 1. Il est possible de donner une liste de 
+valeurs. On peut mlanger avec .16 et .32	Exemple:\p;	.8	H'FF\p;	.8	H'FF,D'12,O'102,B'1101\p;	.8.16	'A,GETCAR-TABLE\g;\cadre:.16	valeur|	rserve un word (16 bit) et l'initialise  <valeur>. 	Le PCASS est incrment de 2. On peut mlanger avec .8 et .32\cadre:.32	valeur|	rserve un long (32 bit) et l'initialise  <valeur>. 	Le PCASS est incrment de 4. On peut mlanger avec .8 et .16\snum;Correspondance avec les anciennes pseudos\p;Assembleur Z80		Assembleur 68000	Nouveau.ALIGN			.ALIGN.ASCII			.ASCII.ASCIZ			.ASCIZ.B			.8			*.BLKB			.BLK.8			*.BLKW			.BLK.16			*.BYTE			.8			*.ELSE			.ELSE.END			.END et .START		*.ENDIF			.ENDIF.EVEN			.EVEN.FILLB			.FILL.8			*.FILLW			.FILL.16			*.HEX			.LISTHEX ou .LISTBASE	*.IF			.IF.INS			.INS.LINES			.LINES.LIST			.NOLIST et .ENDNOLIST	*.LOC			.LOC.OCT			.LISTOCT ou .LISTBASE	*.ODD			.ODD.PAGE			.PAGE.PC			.PC.PROC			.PROC.RADIX			.BASE			*.RDX			.BASE			*.REF			.REF.REV			.REV.SBTTL			.CHAP			*.TEXT			.IDENT			*.TITLE			.TITLE.W			.16			*.WORD			.16			*\g;\snum;Valeurs par dfaut\a:L'assembleur dmarre avec un certain nombre de paramtres par dfaut:\p;	.BASE	D'10	.LISTHEX	.LINES	D'0\g;arrangement des bytes selon la philosopie 68000 (pour .16 p. ex.)\snum;Les pseudos pas encore implementes\a:Les pseudoinstructions suivantes sont prvues et supporteront 
+les possiblits suivantes: rservation dcimale (BCD) et floating-point. \a:Des propositions intressantes sont toujou bienvenues..D8.D16.D32.F32.F64.F80\num;Les expressions arithmtiques\a:Une expression arithmtique est une combinaison de valeurs numriques 
+(constantes, symboles, etc.) de signes opratoires et de parenthses. \a:Les valeurs numriques sont uniquement des nombres signs (integers). 
+La syntaxe des expressions arithmtiques est illustre au chapitre 5.5. 
+Dans certains cas, seulement des expressions simples (sans les oprations 
+de comparaison) sont admises (par exemple dans la pseudo .ASCII. 
+La base par dfaut est le dcimal. L'organisation par dfaut des bytes 
+dans le rsultat (par exemple dans un .32) suit la philosophie du processeur 
+68000 de Motorola.\snum;La priorit des oprations\a:Pour analyser correctement une expression arithmtique il faut connatre 
+dans quel ordre vont s'effectuer les oprations ou la priorit des 
+oprations.\a:Les principales rgles d'valuation sont les suivantes:a) En l'absence de parenthses les operateurs *, /, .MOD., .AND. et   ** sont traits avant les oprations +, -, .OR. et .XOR..b) En cas d'galit de priorit, l'valuation se fait de gauche  droite.c) S'il y a des parenthses, elles sont effectues en premier.\snum;Oprateurs\a:Les oprateurs sont prsents par la suite dans l'ordre des priorits 
+croissantes. Tous les oprateurs travaillent sur des nombres signs 
+(integer) et le rsultat est aussi un nombre sign (sauf pour les 
+oprateurs de comparaison).-\ind 5mm;Les oprateurs de comparaison sont =, <, >, <>, <=, =<, >= et 
+=>. Le rsultat est similaire au PASCAL, c..d. un rsultat boolen avec 
+TRUE = -1 (tous les bits  1) et FALSE = 0. Les deux expressions  
+comparer peuvent tre quelconques, signes. Ces oprateurs ont la priorit 
+la plus faible. Les oprateurs plus petit ou gal et plus grand ou gal 
+sont reprsents par deux signes identiques: <=, =< et >=, =>.\marge #+5mm;On peut aussi utiliser les termes suivants:.EQ.	ou	=	.GT. ou	>	.HI..NE. 	ou	<>	.GE. ou	>=	.HS.			.LE. ou	<=	.LS.			.LT. ou	<	.LO.\marge #-5mm;-\ind 5mm;Les oprateurs de "term" sont +, -, .OR. et .XOR..-\ind 5mm;Les oprateurs de "factor" sont *, /, .MOD., .AND., **, .ASR., 
+.SL. et .SR.. \ind 5mm;L'oprateur ".MOD." fournit une opration modulo, c..d. le reste de 
+l'opration "/" (p.ex. 3.MOD.2 = 1).-\ind 5mm;L'oprateur "**" effectue l'exponentiation. Si l'exposant est 
+ngatif le rsultat vaut zro.-\ind 5mm;Les oprateurs de plus haute priorit (donc excuts en premier) 
+sont les parenthses, l'oprateur .NOT. (complment  1) \ind 5mm;et l'oprateur "~" (<>0 -> 0, 0 -> MAXINT).\ind 5mm;Les oprateurs .AND., .OR., .XOR., .ASR., .SL., .SR. et .NOT. \ind 5mm;considrent les oprandes comme nombres logiques et livrent un rsultat 
+correspondant.\snum;Constantes, nombres, identificateurs\a:Plusieurs chanes de caractres sont traites spcialement par l'unit qui 
+analyse une expression arithmtique.a)\ind 6mm;".": Le point reprsente le PC de l'assembleur au dbut de la 
+ligne d'instructions d'assembleur qui est assemble actuellement.b)\ind 6mm;unsigned constant: quatre types de constantes non-signes sont 
+reconnues: -\ind 6mm;B',O',D',H' sont suivis du nombre dfini dans la base 
+respective:\ind 6mm;B' ou 2': binaire\ind 6mm;O' ou 8': octal, deuxime signe admis: Q'\ind 6mm;D' ou 10': dcimal\ind 6mm;H' ou 16': hexadcimal, deuxime signe admis: X'\ind 6mm;Exemple: H'FF -\ind 6mm;nombre suivi d'un point. Ceci prsente un nombre dcimal. \ind 6mm;Ce format est support par compabilit, mais on suggre de ne plus 
+l'utiliser. \ind 6mm;Exemple: 10. -> D'10. -\ind 6mm;nombre dfini dans la base actuelle. Si la base est suprieure 
+ D'10 le nombre doit commencer par un zro. \ind 6mm;Exemple: 0DD (base actuelle est D'16) -\ind 6mm;'caractre permet de charger la valeur d'un caractre -\ind 6mm;"string" permet de charger la valeur d'un caractre ou d'un 
+c)\ind 6mm;deux identificateurs sont reconnus: -\ind 6mm;symbole: Le symbole doit commencer par un caractre parmi 
+['?','_','A'..'Z'] et peut tre suivi par des caractres parmi 
+['?','_','A'..'Z','0'..'9']. Les noms des registres du processeur sont 
+identifis d'abord. -\ind 6mm;adresses locales: Une adresse locale est dfinie 
+par une ou deux chiffres suivi par le signe "$". 
+Ces adresses sont entre deux adresses symboliques.\snum;ExemplesLa base par dfaut est dix.2 * 3 + 4 -> 104 + 2 * 3 -> 10(4 + 2) * 3 -> 187.MOD.2 -> 12**3 - 2 -> 62 > 1 -> -1 (TRUE)(8 - H'100) >= 0  -> 0 (FALSE)'A' <> 'B' -> -1 (TRUE)D'100/B'1010 -> 10La valeur d'un symbole est mmorise dans 32bits et reprsente un nombre 
+sign (-(2**31)..(2**31)-1). Les calculs internes se font sur 128bits et la 
+valeur d'un symbole utilise dans une expression est d'abord tendue de signe  
+128 bits. \a:L'exemple suivant montre les rsultats errons:\p;	DANG	=	H'FFFFFFFF	.16	DANG/H'10000		; on aimerait le mot suprieur de DANG\a:mais ceci correspond :\p;	.16	-1/H'10000		; donc on obtient zro\a;mais on a:	.16	H'FFFFFFFF/H'10000	; donne bien H'FFFF (rsultat voulu)\note:Il ne faut pas utiliser l'oprateur "/" mais l'oprateur ".SR.". 
+La division ("/") est une opration sur des nombres signs! 
+Notez qu'avec p.ex. DANG=H'A0000000 on obtient bien H'A000 dans .16! Pourquoi?\snum;Syntaxe d'une expression arithmtique\a:La priorit des oprateurs crot du haut vers le bas.

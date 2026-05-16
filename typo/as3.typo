@@ -1,0 +1,133 @@
+\fichier:as3.tx\importe:as\haut:Assembleur CALM\newtab 12mm, 25mm, 37mm, 50mm, 62mm, 75mm;\cpage=31;\define p:\ur08;\define g:\ur10;\define b:\ub10;\num;CALM 3\a:CALM (Common Assembly Language for Microprocessors) est un ensemble de 
+notations pour assembleurs de microprocesseurs, dvelopp  l'EPFL ds 
+1974.\a:Il est caractris par un nombre restreint de mnmoniques clairs pour 
+exprimer la fonction excute par l'instruction, et par des oprandes dont 
+la liste suit le mnmonique, le mode d'adressage de chaque oprande tant 
+dcrit par une expression indiquant avec prcision le calcul effectu pour 
+obtenir l'adresse.\a:Quelques signes spciaux sont ncessaires pour prciser ces modes 
+d'adressages. On peut caractriser les modes d'adressages par des 
+niveaux, o chaque niveau indique une indirection de plus ou de moins. 
+Normalement on travaille au niveau 1, c..d. avec aucun signe spcial. Les 
+registres sont traits comme de la mmoire, mais dcods spcialement lors 
+de l'assemblage, c..d. leurs noms sont rservs. Pour chaque oprande on 
+calcule d'abord les expressions associes.\p;Niveau	Transfert		Signe	Exemples3	(D)		{{ }}	voir 16000				voir 68092	(C)		{ }	MOVE.8	D0,{A0}				MOVE.8	D0,{A0}+{D0}1	(B)		aucun	MOVE.8	D0,DATA				MOVE.32	MEM1,MEM2				MOVE.8	DATA,D00	(A)		#	MOVE.8	#DATA,D0				MOVE.32	#MEM2,MEM1\g;Pour le 68000:(A):	prend T^(l'adresse calcule)(B):	prend T^(le contenu) de A32^(l'adresse calcule)(C):	prend T^(le contenu) du A32^(contenu) de A32^(l'adresse calcule)(D):	etc.T^ correspond  la largeur du transfert\snum;Description du langage CALM 3\a:Jusqu' maintenant il y a eu 3 dfinitions du langage CALM: CALM1 pour les microprocesseurs 8 bits (p.ex. le Z80), CALM2 pour les microprocesseurs 16 bits (p.ex. le 68000) CALM3 pour les microprocesseurs de taille quelconque (p.ex. le 
+68000 ou le 8086). \a:La description ci-dessous se limite  un rsum de CALM3:\a:La syntaxe gnrale d'une instruction est donne par:\b:	opcode.extension,condition	source,destination|\lo;- Les opcodes sont: ADD, ADDC, AND, ASL, ASR, CALL, CLR, COMP, 
+DEC, DECJ, DIV, EX, HALT, INC, JUMP, MOVE, MUL, NEG, NEGC, NOP, NOT, OR, 
+POP, PUSH, RESET, RET, RL, RLC, RR, RRC, SET, SEX, SKIP, SL, SR, SUB, 
+SUBC, SWAP, TEST, TCLR, TNOT, TRAP, TSET, WAIT et XOR. Les instructions 
+spciales d'un processeur sont exprimes par le mnmonique original du 
+fabriquant.- L'extension dfinit le type de donnes. Un point est utilis 
+comme sparateur. Les types les plus frquents sont: 8, A8, D8, 16, A16, 
+32, F32, 64 et F64 (A pour extension du signe arithmtique, D pour BCD, F 
+pour virgule flottante IEEE 754). Aucune valeur par dfaut n'est 
+suppose.- Une condition optionnelle, spare par une virgule, est 
+possible: EQ=ZS=BC, NE=ZC=BS, LO, LS, HS, HI, GT, GE, LE, LT, MI, PL, VC, 
+VS, CC=HS, CS=LO.- Les oprandes (source, destination) sont spars par une 
+virgule. Dans le cas de plusieurs sources, la syntaxe est la suivante: 
+source1, source2, destination. Une sous-adresse est annonce par 
+deux-points.- La syntaxe d'une expression arithmtique est donne dans le 
+paragraphe 5.- L'assembleur choisit par dfaut l'adressage relatif si possible. 
+\a:On peut forcer le mode d'adressage:\p;	R^	relatif au PC (l'assembleur choisi la grandeur)	R16^	16 bit relatif	A16^	16 bit sign	16^	16 bit absolu\g;\a:Une description dtaille du langage CALM 3.3 (en grandes lignes 
+compatible avec l'assembleur sur SM8) peut tre consulte dans le document 
+Common Assembly Language for Microprocessors, CALM, Draft 3.3.\snum;Diffrences CALM1 - CALM2 - CALM3\a:Le but de ce chapitre est d'expliquer quelques diffrences des langages 
+CALM au moyen d'un exemple simple: le transfert
+du contenu d'une position mmoire dans un registre 8 bits et 16 bits 
+et la mme chose en index. Nous choissisons comme processeur le Z80 (CALM1) et le 
+68000 (CALM2 et CALM3). Nous avons donc:\lgr08;	CALM1			CALM2			CALM3A	LOAD	A,ADR		LOAD.B	D0,ADR		MOVE.8	ADR,D0B	LOAD	HL,ADR		LOAD.W	D0,ADR		MOVE.16	ADR,D0C	LOAD	A,(IX)+10	LOAD.B	D0,(A0)+10	MOVE.8	{A0}+10,D0
+D	-			LOAD.W	D0,(A0)+(3*2)	MOVE.16	{A0}+(3*2),D0\g;\a:On peut noter les points suivants:\lo;- la largeur des donnes  transfrer n'est pas spcifie dans 
+CALM1. Une lettre signifie 8bits, deux lettres 16bits, etc. 
+Ceci n'est plus possible avec le processeur 68000 o on peut accder au 
+registre D0 (p.ex.) par 8, 16 et 32bits. Les transferts mmoire  mmoire 
+ne sont gnralement pas possible avec les processeurs 8bits, mais pose 
+pour les processeurs plus performants le problme suivant: combien je transfre?\al;CALM2 spcifie la largeur du transfert par des lettres (B,W,L) et 
+CALM3 spcifie directement le nombre de bits; ce qui est plus prudent 
+car ceci couvre  la fois tous les processeur  N bits (pas ncessairement 
+multiple de 8!) et vite des lettres bizarres pour toutes les largeurs 
+possibles  couvrir en CALM2 (p.ex. Q=64, N=4, etc.).- l'index: l'exemple D montre bien le problme du CALM2 pour des 
+expressions avec parenthses qui suivent un indexage, car les deux 
+utilisent les parenthses (il faut noter qu'avec le 68000 il n'y a pas 
+de doute, car cet adressage n'existe pas). CALM3 distingue l'indexage (et 
+aussi l'indirection) d'une expression avec parenthses en utilisant les 
+accolades.\num;Comment crire des programmes indp. \titre;des positions mmoire avec le 68000\a:Le SMAKY8 peut excuter plusieurs programmes en mme temps. Il est donc 
+ncessaire et possible de charger un programme  n'importe quelle 
+adresse (naturellement paire). Ceci demande au programmeur une certaine 
+discipline de programmation, c..d. d'crire des programmes indpendants 
+de la position mmoire (PIPM).\a:Ce document dcrit les instructions du 68000  utiliser et les limites 
+de l'crire des PIPM. Malheureusement il n'est pas possible pour l'assembleur 
+de gnrer du code indpendant de la position mmoire. Ceci n'est pas un 
+dfaut d  l'assembleur, mais aux limites (manque d'orthogonalit) du 
+processeur 68000.\snum;Rgles gnrales pour gnrer du code IPM1) Instructions interditesToutes les instructions, qui utilisent l'adressage absolu sont interdites.Exemples:\p;; adressage absolu 32 et 16 bit		Remplaant	MOVE.32	ADR,D0			MOVE.32	R16^ADR,D0	MOVE.32	#ADR,A6			MOVE.32	#R16^ADR,A6	JUMPA	ADR			JUMP	CALLA	ADR			CALL	etc.\g;2) La longueur du programme ne doit pas dpasser 32 Kbytes.Il est possible de gnrer des programmes qui dpassent 32 Kbytes. Mais le 
+68000 connat uniquement des sauts/MOVEs relatifs d'un rayon maximum de 16 
+bits (+- 32766). L'utilisateur est dans ce cas oblig de faire des 
+"relais" de jumps. Par contre des MOVEs relatifs ne sont plus possibles.3) Il faut sacrifier un registre d'adresse (A6) comme pointeur aux variables. 
+Cette philosophie permet aussi de sparer d'une manire trs nette le 
+programme et les variables. 
+Le 68000 n'a pas prvu un adressage relatif comme destination. En 
+sacrifiant un registre d'adresse (on suggre A6) on a toutes les 
+possibilits d'adressages (A6 joue le rle du "base pointer"). Il est 
+absolument interdit de modifier A6. Il faut initialiser A6 au dbut du 
+programme. Heureusement ce mode d'adressage est support par presque 
+toutes les instructions. Par contre on est aussi limit  +-32 Kbytes. Les 
+dplacements peuvent tre dfinis comme suit:\p;	.LOC	0\a:; ici pointe A6\p;TOTO1:	.BLK.8	1	; 1 byteTOTO3:	.BLK.8	2	.EVENTOTO2:	.BLK.16	2\g;\a:L'utilisation du .BLK.8 et .BLK.16 est trs importante. L'assembleur 
+calcule les adresses, mais aucun code n'est gnr. Il est donc ncessaire 
+de prvoir une routine d'initialisation des variables.\note:Il est fortement dconseill de dfinir les dplacements par des affectations.\a:L'utilisation de la pseudoinstruction .PC permet de dclarer les variables 
+n'importe o dans le programme.\lgr08;PROG	=	0VAR	=	1	.PC	PROG	.LOC	CODE	...			; 1re partie du programme	.PC	VAR	.LOC	0	...			; dclaration des variables qui sont				; des dplacements par rapport  A6	.PC	PROG	...			; deuxime partie du programme\g;4) Adresser une variable diffremment selon source ou destinationL'ide est illustre par l'exemple ci-dessous:\p;	MOVE.32	R16^DATA,D0	; position mmoire est "source"	PUSH.32	A6		; pas ncessaire si on rserve	MOVE.32	#R16^DATA,A6	; A6 pour "scratch"	MOVE.32	D0,{A6}		; position mmoire est	POP.32	A6		; "destination"\ff;; les 4 instructions ci-dessus remplacent l'instruction inexistante:	MOVE.32	D0,R16^DATA\g;Dsavantages: les variables et le programme sont dans les 32 Kbyte. Si la 
+position mmoire est adresse comme destination, le code gnre n'est pas 
+ngligeable.\snum;Exemple\lgr08;\large 130mm;	.TITLE		DINGDONG	.PROC		M68000		; module 68000	.REF		DRIVERS		; valeurs des symboles	.REF		FOS	.REF		GESMEM	.REF		LIB; PF, 17.7.1984, PFDINGDONG.ASM; Produit les diffrents sons de la librairie	.LOC		0VAR:						; variablesCOUNT:	.BLK.8		1	.EVENENDVAR:	.LOC		0START:						; programme	.16		LIB,?OPELIB		; ouvre la librairie	MOVE.16		#MTYPCP,D1	MOVE.32		#ENDVAR-VAR,D4	.16		GESMEM,?GETMEM		; prend la mmoire pour les var.	JUMP,NE		ERROR	MOVE.32		A4,A6			; A6 ^variables	MOVE.32		#R16^TABLE,A0		; charge dbut de la table dans A0	MOVE.8		#ETABLE-TABLE,{A6}+COUNT	; longueur de la table\ff;10$:						; adresse locale	MOVE.8		{A0+},D3			; charge une valeur	.16		LIB,?BEEP			; produit le son	DEC.8		{A6}+COUNT			; compte	JUMP,NE		10$			; pas termin ? -> sautFIN:	.16		LIB,?CLOLIB		; ferme la librairie	.16		FOS,?STOP			; et retourne au systme						; la mmoire est aussi rendueERROR:	.16		LIB,?AFERROR		; affiche l'erreur	JUMP		FIN			; et quitteTABLE:	.8		BIPLIT,BIPEND,BIPYES,BIPBIG,BIPERR,BIPFAT,BIPDONEETABLE:						; fin de la table	.START		START			; l'adresse de start	.END\marge 84mm;\large 120mm;\ff;\num;Les macroinstructions\a:Le principe d'une macro est le remplacement d'une suite d'instructions, 
+dfinie  l'avance, lorsqu'on fait appel  cette macro. Ainsi on peut 
+virtuellement augmenter le rpertoire d'instructions d'un processeur. 
+L'avantage principal de la macro (compar  un sous-programme, CALL) est 
+le transfert des paramtres. On peut transfrer jusqu' 8 paramtres. Il 
+est possible de dclarer des adresses locales (max. 8) et de dfinir des 
+paramtres par dfaut. On peut tester la prsence d'un paramtre  l'appel 
+de la macro ou comparer le paramtre transmis avec une chane.\snum;Dfinition d'une macro\a:Une macro doit tre dfinie par avance, sinon elle n'est pas reconnue. 
+Dans une dfinition de macro peuvent apparatre les pseudoinstructions 
+suivantes:\g;\cadre:.MACRO\ind 20mm;symbole|\ind 20mm;commence la dfinition d'une macro. Le symbole designe le nom de 
+la macro.\cadre:.ENDMACRO|\ind 20mm;termine la dfinition d'une macro.\cadre:.LOCALMACRO  symbole1,symbole2,...|\ind 20mm;dfinit jusqu' 8 adresses locales utilises dans la macro. Ceci 
+vite des adresses multi-defined. Lors de l'appel de la macro, ces 
+adresses sont remplaces par des adresses du type: ??AAAA jusqu' ??ZZZZ.\cadre:.DEFMACRO  %1=paramtre1,%2=paramtre2,...|\ind 20mm;dfinit jusqu' 8 paramtres par dfaut. Lors de l'appel de la 
+macro il y a trois situations: 1) si le paramtre n'est pas prsent et pas 
+prdfini un espace remplace le %i; 2) si le paramtre n'est pas prsent 
+mais prdefini; 3) si le paramtre est prsent et prdfini.\cadre:.IF\ind 20mm;%i|\ind 20mm;teste si le paramtre i est prsent  l'appel de la macro. On 
+peut utiliser normalement .ELSE et .ENDIF avec ce .IF.\ff;\cadre:.IF\ind 20mm;%i=paramtre|\ind 20mm;teste si le paramtre i  l'appel de la macro est identique au 
+paramtre.\cadre:%i|\ind 20mm;paramtre utilis dans une expression quelconque.c\a:Un paramtre est un string compos de caractres suivants:\b;A..Z|0..9|?|_|.|+|-|/|*|:|!|&|'|$|#|{|}|^|(|)\g;\a:La longueur significative est de 16 caractres.\snum;Appel d'une macro\a:L'appel d'une macro se fait comme une instruction du processeur:\b;	macroname	paramtre1,paramtre2,...\g;\a:Le nom de la macro (macroname) doit tre dfini par avant. Les paramtres 
+peuvent tre prsent ou pas. Il est possible de dfinir seulement certains 
+paramtres:\g;	macroname	,,TOTO,,TITI\b;\a:C'est  dire, que le premier, deuxime et quatrime 
+paramtre ne sont pas dfinis et le troisime est TOTO 
+et le cinquime est TITI. C'est pourquoi les virgules sont indispensables.\snum;Remarques\a:Les indications d'erreurs sont assez claires pour montrer les limites des 
+macroinstructions.\ff;\snum;Exemple de macroinstructions\marge 80mm;\large 135mm;Le source:\lgr08;	.TITLE		TEST MACRO's ON MACRO ASSEMBLER	.PROC		M68000	.REF		FOS	.REF		LIB;--------------------------------------------------------------------------; MACRO DEFINITIOS:	.MACRO		LIB_	.IF		%1	.16		LIB,%1	.ELSE	ERROR	.ENDIF	.ENDMACRO	.MACRO		FOS_	.IF		%1	.16		FOS,%1	.ELSE	ERROR	.ENDIF	.ENDMACRO	.MACRO		DJ	.LOCALMACRO	LOOPLOOP:				; automatic generation of  addr	MOVE.8		%1,%2	DECJ.16,NMO	%3,LOOP	.ENDMACRO;----------------------------------------------------------------------	.LOC		0START:	LIB_		?OPELIB	MOVE.32		#R16^START,A1	MOVE.16		#1-1,D0	DJ		{A1+},D1,D0	MOVE.32		#R16^START,A1	MOVE.16		#1-1,D0	DJ		{A1+},D2,D0	LIB_		?CLOLIB	FOS_		?STOP	.START		START	.END\b:Et le listing correspondant:\lgr08;CALM 3 MACRO ASSEMBLER 68000  rev 2-7	01	TEST MACRO's ON MACRO ASSEMBLER	Modul:	M68000.BIN  rev 2-684/07/17 00:25:37  TEST MACRO's ON MACRO ASSEMBLE              01-01				.TITLE		TEST MACRO's ON MACRO ASSEMBLER				.PROC		M68000				.REF		FOS				.REF		LIB			;-------------------------------------------------
+-------------------------			; MACRO DEFINITIOS:				.MACRO		LIB_				.IF		%1				.16		LIB,%1				.ELSE				ERROR				.ENDIF				.ENDMACRO				.MACRO		FOS_				.IF		%1				.16		FOS,%1				.ELSE				ERROR				.ENDIF				.ENDMACRO				.MACRO		DJ				.LOCALMACRO	LOOP			LOOP:				; automatic 
+gnration of addr				MOVE.8		%1,%2				DECJ.16,NMO	%3,LOOP				.ENDMACRO			;----------------------------------------------
+-------------------------000000				.LOC		0			START:				LIB_		?OPELIB000000 4E460000			.16		LIB,?OPELIB000004 43FAFFFA			MOVE.32		#R16^START,A1000008 303C0000			MOVE.16		#1-1,D0				DJ		{A1+},D1,D0			??AAAA:00000C 1219			MOVE.8		{A1+},D100000E 51C8FFFC			DECJ.16,NMO	D0,??AAAA000012 43FAFFEC			MOVE.32		#R16^START,A1000016 303C0000			MOVE.16		#1-1,D0				DJ		{A1+},D2,D0			??AAAB:00001A 1419			MOVE.8		{A1+},D200001C 51C8FFFC			DECJ.16,NMO	D0,??AAAB				LIB_		?CLOLIB000020 4E460001			.16		LIB,?CLOLIB				FOS_		?STOP000024 4E450010			.16		FOS,?STOP	00000000		.START		START				.ENDThird pass complete  3 sec 17 references3/3/3 if/else/endif3/5 macro definitions/calls0 inserted filesSource file 52 useful lines longBinary file H'00000028 bytes longChecksum: H'47Assembly time: 7 sec   445 lines/min\marge 84mm;\large 120mm;\g;\ff;\num;Le format MUFOM\a:MUFOM est une abrviation pour Microprocessor Universal Format for Object 
+Modules. Le format MUFOM gnr par l'assembleur 68000 reprsente un format 
+universel pour des processeurs quelconques. \a:Ce format permet le linkage et la relogeabilit. Sa portabilit est assure par 
+son format ASCII. Le format MUFOM fait partie d'une standardisation internationale 
+(P695/02). \a:L'assembleur gnre le fichier .MUFOM avec la commande AS/R. 
+Ce format est utilis pour gnr des programmes quelconques (mme 
+spars), mais ncessite un LINKER (lie tous les modules ensemble). 
+A l'heure actuelle il n'y a pas de LINKER.\snum;Le format MUFOM\a:Le texte suivant est un rsum du document P695/02.\a:Le format MUFOM est une squence de commandes. Chaque commande commence 
+par deux lettres et est termin par un point. 
+Tous les caractres de contrle ASCII (LF,CR,etc.) sont ignors. Ainsi les 
+caractres significatifs sont tous les caractres entre le code H'20 et 
+H'7E sans les minuscules.\a:Les commandes implmentes sont:\b:"MB" target-machine-configuration "," module-name "."|\ind 8mm;commence le module MUFOM. target-machine-configuration contient le nom du 
+module processeur et module-name le texte donn par .TITLE.\b;"ME."\g;\ind 8mm;termine le module MUFOM. C'est la dernire commande.\b;"DT" date-time "."\g;\ind 8mm;spcifie la date et l'heure de cration du module MUFOM.\b;"AD" bits-per-MAU "," MAUs-per-address "," order "."\g;\ind 8mm;spcifie le format d'adresses. bits-per-MAU spcifie le nombre de bits par 
+unit adressable minimale (MAU). MAUs-per-address donne le nombre maximum 
+de MAUs dans une adresse  reloger. Order spcifie l'ordre des bytes dans 
+une adresse (M=most significant first, L=least significant first).\ff;\b;"CO" comment-level "," comment-text "."\g;\ind 8mm;dfinit un commentaire. Comment-level permet de distinguer diffrents 
+niveaux de commentaires et comment-text est un texte quelconque. 
+L'assembleur donne la rvision de l'assembleur et le fichier source 
+assembl dans un commentaire.\b;"SB" section-number "."\g;\ind 8mm;commence une section. Un module peut tre divis en une ou plusieurs 
+sections. Pour chaque .LOC il y a une nouvelle section.\b;"ST" section-number "," section-type "."\g;\ind 8mm;dfinit le type de la section.\b;"SA" section-number "," MAU-boundary "."\g;\ind 8mm;est ncessaire si une section doit partir  une adresse multiple de plus 
+qu'une MAU (p.ex.: 68000).\b;"ASG," expression "."\g;\ind 8mm;dfinit l'adresse de start.\b;"ASL" section-number "," expression "."\g;\ind 8mm;dfinit l'adresse de chargement\b;"ASS" section-number "," expression "."\g;\ind 8mm;dfinit la longueur du code\b;"ASN" I-variable "," expression "."\g;\ind 8mm;assigne  la varibale I la valeur correspondante (voir NI et NN).\b;"CS" checksum "."\g;\ind 8mm;le checksum est une addition successive des bytes ASCII (sans les 
+caractres de contrle) modulo 128. Le dernier byte ajout est le S de la 
+commande CS. Le checksum doit tre gal. Le checksum est remis  zro par 
+le dbut d'un module et aprs avoir rencontr le point de la commande CS. 
+CS. met le checksum  zro sans tester. Les commandes checksum peuvent 
+apparatre partout.\b;"LD" load-constant "."\g;\ind 8mm;load-constant est une valeur  charger dans une ou plusieurs MAUs. 
+Contient donc le binaire du programme sous forme hexadcimale.\b;"NI" I-variable "," ext-def-name "."\g;\ind 8mm;cette commande permet l'exportation du symbole ext-def-name (.EXPORT).\b;"NN" I-variable "," name "."\g;\ind 8mm;cette commande donne tous les symboles non exports ou imports. 
+Ils apparaissent dans le module par la pseudoinstruction .EXPORTALL.\ff;\snum;Les pseudoinstructions MUFOM\a:Ce chapitre donne uniquement un survol des instructions disponibles. 
+Pour plus de dtails consultez la notice LINKER (pas encore disponible).\cadre:.EXPORTALL\g;|\ind 20mm;insre dans le format MUFOM tous les symboles non exports ou 
+imports.  Ceci est utile pour le debugging symbolique d'un programme.\cadre:.EXPORT\ind 20mm;symbole,...\g;|\ind 20mm;permet l'exportation des symboles et leur insertion dans le format 
+MUFOM. Il faut que ces symboles soient dfinis dans le programme actuel.\cadre:.IMPORT\ind 20mm;symbole,...\g;|\ind 20mm;permet l'importation des symboles et leur insertion dans le format 
+MUFOM. Il faut que ces symboles ne soient pas dfinis dans le programme 
+actuel. Ces pseudo-instructions doivent apparatre au dbut d'un programme.

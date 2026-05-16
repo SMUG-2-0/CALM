@@ -1,0 +1,159 @@
+\fichier:art:as1\importe:as\LAMI;\haut:Assembleur CALM \> LAMI\define p:\ur08;\define g:\ur10;\define b:\ub10;\define c:\ur10;\define i:\ui08;\=\titre;ASSEMBLEUR 68000\num;Introduction\a:L'assembleur est un programme qui traduit le \b:langage d'assemblage 
+(mnmoniques)| d'un processeur spcifique dans le \b:langage machine (code)|. 
+Ce programme a t crit en langage d'assemblage du processeur 68000 
+et tourne sur le systme d'exploitation du SMAKY8 et SMAKY100 (Psos). \a:Ce programme, c..d. l'assembleur, est divis en deux parties: le corps de 
+l'assembleur, qui traite toutes les entres/sorties, les 
+pseudoinstructions et la gnration de code avec la table des symboles. 
+Deuximement il existe le module, qui dcrit dans un meta-langage les 
+instructions d'un processeur particulier. Actuellement il y a les modules 
+pour les microprocesseurs 68000, la famille 8086, Z80, 8080 et 8085. Ainsi 
+ce programme est un cross-assembleur, car il permet, en chargeant le 
+module correspondant du processeur qu'on veut assembler, d'assembler 
+n'importe quel programme si le module correspondant existe.\a:Ce document dcrit uniquement la gnration de binaires absolus. La 
+possibilit de dcomposer un programme en modules spars (et de les 
+assembler sparment) sera dcrite dans la notice LINKER (pas disponible 
+pour le moment).\a:Le langage d'assembleur utilis est le CALM (Common Assembly Language 
+for Microprocessors), et pour tre plus prcis le CALM 3. Une brve 
+description de ce langage est faite dans le paragraphe 6.\a:L'assembleur est crit en assembleur 68000 (donc pas en langage 
+haut-niveau). Les avantages principaux de cette solution sont la vitesse 
+d'excution (suprieur  2000lignes/minute), une place mmoire minimale 
+occupe par l'assembleur et une compression maximale pour les donnes 
+utilises par l'assembleur. Une portabilit est aussi assure en 
+s'appuyant sur le systme \PSI;os.\a:Les amliorations conscutives du langage d'assemblage CALM (common 
+assembly language for microprocessors dvelopp en 1974) ont conduit  
+CALM3. Ce langage supporte les dernires gnrations de micro- et 
+miniordinateurs, comme le 8086, Z8000, 68000, 16000 et le VAX. Les 
+modifications les plus importantes sont:\newtab 20cw,30cw;\dma 4cw;\p;	\	\	ancien	\	nouveauadressage index	(IX)	\	{IX}extensions	\	.B	\	.8	\	\	.W	\	.16	\	\	.L	\	.32forcer l'adressage	R16"	\	R^ ou R16^	\	\	(PC)+	\	R^	\	\	absolu	\	32^ ou 16^mnmonique	\	LOAD	\	MOVEoprandes	\	dest.,source	source,destination\fma;\a:En plus il y a une analyse des expressions plus volue, entre autre avec 
+des comparaisons (>, <, etc.).\a;Il existe un traducteur CALM2 -> CALM3 pour le 68000 crit en 
+MODULA-2.\snum;Optimisation du code\a:L'ide principale est d'optimiser le code gnr. Ceci ncessite au 
+minimum trois passes. L'assembleur relit le source N fois, jusqu' ce que 
+le code gnr ait une longueur minimale.\snum;Symboles prdfinis\a:Dans chaque programme apparaissent un certain nombre de constantes. Les 
+plus utilises sont maintenant prdfinies:\newtab 12cw,14cw,26cw;\dma 4cw;\p;TRUE	\	=	-1	\	(tous les bits  1)FALSE	\	=	0SYSTEM_TIME	=	|0|h|m|s|	(32 bits, BCD, l'heure)SYSTEM_DATE	=	|0|y|m|d|	(32 bits, BCD, la date)MAXINT	\	=	2**31-1	\	(nb pos. max. mmorisable)?ASCOND	\	=	FALSE or TRUE	(voir ligne de commande)\fma;\snum;L'analyse d'expressions\a:L'analyse d'expressions a t enrichie par des oprateurs de comparaison, 
+qui donnent des rsultats logiques (TRUE, FALSE). Une expression est 
+calcule internement avec 128 bits, donnant de la rserve pour des 
+processeurs futurs. Un symbole est mmoris avec 32 bits, contrairement  
+l'assembleur Z80 sur SM6 (16 bits). Un symbole a maintenant 12 caractres 
+significatifs et conduit souvent  des symboles non dfinis, si l'on passe 
+de SM6  SM8 (sur SM6 il y avait 6 caractres significatifs). Les 
+sparateurs admis sont la virgule, l'espace et le tabulateur. L'analyse 
+d'expression fait maintenant partie du corps de l'assembleur (dans 
+l'assembleur Z80, l'unit arithmtique faisait partie du module). Ceci 
+diminue considrablement la taille des modules. En plus il est possible de 
+calculer des expressions sans charger un module quelconque (avec la 
+philosophie Motorola, MSB dans la mmoire infrieure).\snum;Les pseudoinstructions\a:Avec l'volution du CALM3 quelques pseudoinstructions ont t redfinies 
+ou ajoutes (par exemple les macroinstructions).\snum;L'optimisation des instructions\a:L'assembleur peut optimiser le code de quelques instructions. Actuellement 
+il y a trois cas possibles pour le 68000:\dma 4cw;\newtab 20cw,28cw,38cw;\p;6000000C	\	JUMP	\	ALPHA	\	; saut relatif61000008	\	CALL	\	ALPHA203C0000001D	\	MOVE.32	\	#VALEUR,D0	\	ALPHA:	\	VALEUR	=	D'29\fma;\a:Dans les trois cas l'assembleur ne connat pas les valeurs de ALPHA et 
+VALEUR dans la premire passe et prend le code plus long. En optimisant 
+(AS/O) on obtient:\dma 4cw;\p;6004	\	\	JUMP	\	ALPHA	\	; saut relatif6102	\	\	CALL	\	ALPHA701D	\	\	MOVE.32	\	#VALEUR,D0	\	ALPHA:	\	VALEUR	=	D'29\fma;\a:La longueur du binaire a pass de 14  6 bytes! Le seul dfaut de cette 
+mthode est sa lenteur si le programme est long.\a:L'assembleur optimise automatiquement si la valeur est connue ou si l'on 
+force l'assembleur  prendre l'instruction avec le code minime (si c'est 
+possible). Donc l'utilisateur peut forcer le code optimis. Reprenant le cas d'avant 
+en crivant:\dma 4cw;\p;6004	\	\	JUMP	\	R8^ALPHA	; saut relatif6102	\	\	CALL	\	R8^ALPHA701D	\	\	MOVE.32	\	#A8^VALEUR,D0	\	ALPHA:	\	VALEUR	=	D'29\fma;\a:Les lignes suivantes donnent un peu plus de dtails au sujet des instructions 
+optimisables par l'utilisateur.\ff;\a:Le dplacement pour les sauts relatifs courts (JUMP, CALL) est limit  -128..+126 bytes (8 bit). La valeur du MOVE.32 est aussi limite  -128..+127 (8 bit) et uniquement un registre de data (Di) est admis comme 
+destination.\a:Voici une petite liste d'instructions  optimiser facilement en utilisant 
+une autre squence d'instructions (ligne(s) en roman petit: squence 
+d'instruction(s) non optimise, ligne(s) en italique: 
+optimise, [gain en bytes], dest = destination):\newtab 8mm, 26mm, 58mm;\ur08;A)\p;	MOVE.8	#2**BOPRD,D3	\c;; valeur: -128..+127\i;	MOVE.32	#2**BOPRD,D3	\c;; dest: Di, [2]B)\p;	MOVE.16	#-1,D4	\c;; valeur: -128..+127\i;	MOVE.32	#-1,D4	\c;; dest: Di, [2]C)\p;	MOVE.32	#VALEUR,D4	\c;; valeur: -128..+127\i;	MOVE.32	#A8^VALEUR,D4	\c;; dest: Di, [4], auto. si val. connueD)\p;	JUMP	ADDRESS	\c;; rayon: -128..+126 bytes\i;	JUMP	R8^ADDRESS	\c;; mme chose avec CALL [2]E)\p;	MOVE.32	#VALEUR,Ai	\c;; valeur -32768..+32767\i;	MOVE.32	#A16^VALEUR,Ai	\c;; dest. Ai, [2], auto. si val. connueF)\p;	ADD.32	#VALEUR,Ai	\c;; valeur -32768..+32767\i;	MOVE.32	#{Ai}+VALEUR,Ai	\c;; dest. Ai, [2]G)\p;	MOVE.s	#0,dest\i;	CLR.s	dest	\c;; s=8,16: [2], s=32: [4]H)\p;	ADD.s	#VALEUR,dest	\c;; valeur 1..8\i;	ADD.s	#VALEUR,dest	\c;; s=8,16: [2], s=32: [4], auto. si val. conn.I)\p;	SUB.s	#VALEUR,dest	\c;; valeur 1..8\i;	SUB.s	#VALEUR,dest	\c;; s=8,16: [2], s=32: [4], auto. si val. conn.J)\p;	TSET.8	dest:#bit1	\c;; mettre une liste de bits  un\i;	TSET.8	dest:#bit2	\c;; dans dest\i;	OR.8	#2**bit1+2**bit2,dest	\c;; gain en vitesse [(nbbit-1)*6]K)\p;	TCLR.8	dest:#bit1	\c;; mettre une liste de bits  zro\i;	TCLR.8	dest:#bit2	\c;; dans dest\i;	AND.8	#H'FF-2**bit1+2**bit2,dest	\c;; gain en vitesse [(nbbit-1)*6]L)\p;	MOVE.32	#R16^RETOUR,A0	\c;; mettre sur pile l'ad. de retour	PUSH.32	A0\i;	PUSH.32	#R16^RETOUR	\c;; [2]M)\p;	COMP.s	#0,source	\c;; tester source (signe, zro)\i;	TEST.s	source	\c;; 8,16: [2], 32: [4]N)\p;	CLRC	\	\c;; C=0\i;	MOVE.8	D0,D0	\c;; [2], mod aussi N,Z,V -> utiliser MOVE! 	 	\	(TEST tombe!)O)	MOVE.16	#LONGUEUR,D0	\c;; copier jusqu'au zro comprisLOOP: MOVE.8	{A0+},{A1+}	\c;; ou longueur dpasse	JUMP,EQ	R8^FIN	DEC.16	D0	\c;; limit  64K	JUMP,NE	LOOP\i;	MOVE.16	#LONGUEUR-1,D0	\c;; voir aussi B)\i;LOOP:	MOVE.8	{A0+},{A1+}	\c;; nettement plus rapide\i;	SKIP,EQ	DJ.16,NMO	D0,LOOP	\c;; [2], EQ: fin du string, 	 	\	  NE: longueur dpasse\c;\a:La liste suivante donne les jumps/calls possibles (rayon):\c;\newtab 32mm, 58mm, 73mm, 96mm;\i;	CALM1 (Z80)	CALM2 (68000)	CALM3 (68000)\i;rel 8 bit\c;	JUMP.	JUMP' ou JUMPR'	JUMP	R8^ \i;rel 16 bit\c;	-	JUMP" ou JUMPR"	JUMP	R16^ \i;rel (AS choisit)\c;	-	JUMP ou JUMPR	JUMP R^ ou JUMP\i;abs 16 bit sign\c;	-	JUMPA'	JUMP	A16^ \i;abs 16 bit\c;	JUMP"	-	-\i;abs 32 bit\c;	-	JUMPA"	JUMP	32^ \i;abs (AS choisit)\c;	JUMP	JUMPA	JUMP	U^\i;par dfaut\c;	absolu	relatif	relatif\snum;Restrictions pour SMAKY (68000)\a:L'assembleur s'excute sur le nouveau systme d'exploitation du SMAKY 
+(FOS, File Operating System). Un des changements fondamentaux est le 
+support du multi-tches qui permet l'excution de plusieurs programmes 
+en mme temps. On doit donc pouvoir charger un programme  n'importe 
+quelle adresse. Il y a deux solutions possibles: premirement, 
+l'assembleur cre un binaire relogeable avec toutes les informations 
+ncessaires et  l'excution d'un tel programme et il faudrait faire un link, 
+load and go  l'adresse,  laquelle le programme peut s'excuter. La 
+deuxime solution consiste  crer du code indpendant de la position 
+mmoire (CIPM). Avec le 68000 il n'est malheureusement pas possible de 
+forcer le CIPM. Il faut, que l'utilisateur lui-mme crive des programmes 
+indpendants de la position mmoire (PIPM). C'est cette solution qui a t 
+adopte par sa simplicit lors de l'assemblage, gnration du code et  
+l'excution. Elle ncessite un apprentissage pour le programmeur, 
+car il ne peut plus utiliser toutes les instructions du 68000.\num;Structure gnrale\a:L'assembleur 68000 est excut sous PSos (operating system du 
+SMAKY 8). Le corps de l'assembleur ncessite environ 24Kbytes et le 
+module 68000 environ 9Kbytes. En plus un minimum de 21Kbytes pour les 
+variables est demand au gestionnaire de mmoire. En gnral 62% de la 
+mmoire libre est demand pour les variables. Si la mmoire demande n'est 
+pas suffisante (table des symboles trop grande par exemple) on peut 
+demander par un switch supplmentaire 94% de la mmoire libre. 
+L'assembleur ncessite donc au minimum 54 Kbytes de mmoire libre.\a:L'assembleur 68000 lit le fichier source au minimum deux fois. Ceci permet 
+de calculer toutes les adresses des symboles, de gnrer correctement le 
+code, de traiter les macros et par un switch optionnel d'optimiser le code 
+gnr.\a:L'assembleur indique aprs chaque passe: le temps d'assemblage de la 
+premire passe, le nombre de symboles trouvs (toutes les affectations, 
+adresses et les symboles chargs par un .REF) et le nombre de symboles 
+effectivement utiliss et l'espace libre dans la table des symboles. Cet 
+espace sera utilis dans la troisime passe comme buffer d'entre/sortie.\a:Si une optimisation (/O) est demande, des passes supplmentaires sont 
+excutes et termines par le temps d'assemblage:Optimisation pass complete  00 min 01 secCeci peut se rpter N fois pour optimiser un code trs long.La deuxime passe est termine comme suit:Second pass complete  00 min 03 sec18 references1/1/1 if/else/endif0/0 macro definitions/calls0 inserted filesSource file 39 useful lines longBinary file H'00000081 bytes longChecksum: H'15Assembly time: 00 min 05 sec   468 lines/min\a:Les informations indiquent (du haut vers le bas): le temps d'assemblage 
+pour la deuxime passe, le nombre d'utilisations des symboles, le nombre 
+pour les pseudoinstructions conditionnels, le nombre de macros dfinies et 
+effectivement appeles, le nombre de fichiers insrs, la longueur du 
+fichier en lignes effectivement assembles, la longueur du code gnr, la 
+somme (checksum) du binaire et la dure totale de l'assemblage du source en 
+trois passes avec une indication de vitesse.\a:Les informations de la deuxime passe apparaissent aussi dans le listing 
+(si demand). 
+S'il n'y a pas d'erreurs trouves l'assembleur efface la fentre aprs une 
+seconde. Par contre, s'il y a des erreurs, l'assembleur s'arrte et demande 
+ l'utilisateur la confirmation de quitter (l'utilisateur peut lire le 
+message d'erreur).\snum;La ligne de commande\a:L'assembleur est dmarr sous le PSos par la ligne de commande suivante:\b:	AS TOTO/switches|\a:Par exemple AS TOTO/L assemble le fichier TOTO.ASM (extension par dfaut), 
+cre le binaire TOTO.CODE (s'il n'y a pas d'erreurs) et un listing 
+TOTO.LIST. Cette commande est quivalente :	AS TOTO/B/Lou	AS TOTO TOTO/B TOTO/L\a:On peut donc changer les noms des fichiers de sortie. 
+Les switches disponibles sont:\ul10;\newtab 15mm;aucun	par dfaut le source et le binaire si /B absent/B	binaire .CODE (avec une entte de 256 bytes) ou .MUFOM/E	erreur .ERROR, contient les erreurs ventuelles des fichiers .INS/L	listing .LIST/M	message .MESG, dvie l'cran sur le fichier .MESG/N	temporaire .ASM, p.ex.: AS TOTO TITI/N recopie TOTO dans TITI 
+et fait toutes les modifications dans TITI/S	table des symboles .SYMB (utilisable par un .REF)/X	cross-rfrence, est ajout  la fin du listing, s'il existe\a:On peut tendre les possibilits de l'assembleur avec les switches 
+supplmentaires suivantes:/A	pour All: prend 94% (normalement 62%) de la mmoire libre pour 
+les variables. Ceci est utile pour les programmes avec beaucoup de 
+symboles et /X/O	pour Optimization: l'assembleur essaye de rduire le code au 
+maximum. Cas possibles: JUMP, CALL, LOAD en avant. Attention: Le nombre de 
+passes augmente et dpend fortement du programme./R	pour Relogable: gnre le format .MUFOM (au lieu .CODE)/T	pour True: met la valeur de ?ASCOND  TRUE. On peut utiliser 
+ce symbole en mettant par exemple: DEBUG = ?ASCOND. Ce switch sur la ligne 
+de commande changera ?ASCOND sans devoir rediter le fichier./D	ne dtruit pas les symboles non-utiliss (p.ex. chargs par un .REF).\a:Ces switches doivent suivre directement le nom de l'assembleur. Pour 
+assembler un gros programme avec gnration du listing on donne la 
+commande suivante:	AS/A TOTO/L\snum;Les entres/sorties et leurs extensions\a:L'assembleur traite et gnre un certain nombre de fichiers, dont les plus 
+importants sont illustrs ci-dessous:\newtab 25mm, 50mm, 58mm, 73mm, 90mm;\i;fichier	extension	entre/sortie	minimum	commande\ur08;<source>	.ASM	lecture 	*	par dfaut<temporaire>	.TEMP	criture	*	par dfaut<binaire>	.CODE	criture	*	par dfaut ou /B<binaire>	.MUFOM	criture	 	AS/R<listing>	.LIST	criture	 	/L<symboles>	.SYMB	lecture	\	 	.REF<symboles>	.SYMB	criture	 	/S<cross-rf.>	.XREF	criture	 	/X<erreur>	.ERROR	criture	 	/E<message>	.MESG	criture	 	/M<insertion>	.ASM	lecture	\	 	.INS\a:La ligne de commande minimale est AS TOTO. L'assembleur ouvre et lit le 
+fichier d'entre TOTO.ASM et copie le contenu de ce fichier dans le 
+fichier temporaire TOTO.TEMP avec les indications d'erreurs ventuelles. A 
+la fin d'assemblage le fichier TOTO.ASM est dtruit et le fichier 
+TOTO.TEMP est renomm en TOTO.ASM. S'il n'y a pas d'erreurs, le fichier 
+binaire TOTO.CODE est cr avec le code correspondant. Un cas particulier 
+se prsente lors d'une erreur fatale. L'assembleur arrte l'excution et 
+affiche la dernire ligne assemble.\snum;La structure des .IF/.ELSE/.ENDIF\a:Les pseudoinstructions .IF/.ELSE/.ENDIF permettent l'assemblage 
+conditionnel. Les instructions entre .IF et .ELSE (ou .ENDIF) sont 
+assembles, si l'expression suivie de .IF est diffrente de zro. Jusqu' 
+8 niveaux d'imbrications sont possibles et un contrle d'un stack 
+overflow/underflow est dtect. Les pseudoinstructions .IF/.ELSE/.ENDIF 
+sont naturellement possibles dans les insertions, mais le niveau 
+d'imbrication doit tre le mme  l'entre et  la sortie du fichier 
+insr. \a:Il est possible de montrer dans le listing les parties non assembls par 
+la pseudoinstruction .LISTIF.\snum;La structure des .INS\a:Un fichier peut tre insr dans le source principal par la 
+pseudoinstruction .INS. L'extension du fichier  insrer est par dfaut 
+.ASM. Il est possible d'imbriquer jusqu' 5 niveaux.\snum;L'assemblage\a:L'assembleur transforme le fichier source en code binaire conformment aux 
+pseudoinstructions de commande et  l'aide de la table de description du 
+processeur.\a:L'assemblage d'un fichier est fait au minimum en deux passes. L'assembleur 
+analyse le fichier ligne par ligne. Une ligne est termin par CR (Carriage 
+Return), le code nul ou FF (Form Feed). Le code nul et FF sont remplacs 
+par CR. Le code LF (Line Feed) est ignor. Un code suprieur  127 (H'7F) 
+provoque une erreur fatale. La longueur de la ligne est limite  128 
+caractres (CR compris). Une ligne trop longue provoque une erreur fatale. 
+Une ligne peut tre vide (seulement terminateur) ou non significative pour 
+l'assembleur. Ceci est le cas pour un commentaire, qui commence par 
+point-virgule ou back-slash, suivi par des caractres quelconques et un 
+terminateur.\a:Dans une ligne on cherche une tiquette. Une tiquette est un 
+identificateur (voir chapitre 5.5) suivi de deux-points. La longueur 
+significative est de 12 caractres. Ensuite on cherche une affectation. 
+Une affectation est un identificateur suivi de "=" et d'une expression 
+(voir chapitre 5.5). La prochaine possibilit est une pseudoinstruction, 
+qui doit commencer par un point (paragraphe 4). Finalement la ligne est 
+considre comme une ligne d'instruction du processeur charg (.PROC).\snum;Restrictions\a:L'assembleur contrle la diffrence entre une adresse et une valeur pour 
+des sauts et chargements \b:relatifs|. Les deux exemples suivants 
+(processeur 68000) montrent la diffrence:\p;	MOVE.W	D0,R16"ALPHA+2ALPHA:	.BLKW	1	.BLKW	1	; on veut accder ici\a:Ceci est naturellement possible, car ALPHA est une adresse. Mais par contre:\p;	JUMP	CR	; carriage return	MOVE.W	D0,R16"2*ALPHA+2\a:Le CR et 2*ALPHA+2 ne sont pas des adresses et l'assembleur 
+signale une erreur.\snum;La structure du fichier .CODE\a:Le fichier objet gnr par l'assembleur est directement une image mmoire 
+du fichier tel qu'il sera en mmoire lors de son excution. L'avantage de 
+cette forme de reprsentation rside dans un chargement trs rapide, 
+aucune conversion de code n'ayant lieu. Le dsavantage est la place 
+occupe sur disque par des programmes occupant les deux extrmits de la 
+mmoire. Ces derniers n'tant pas les plus courants, l'utilisateur 
+s'accommodera de cette petite faiblesse.\a:Le fichier .CODE est gnr par dfaut. 
+Le fichier .CODE est compos d'une entte de 256 bytes suivie du binaire. 
+Cet entte contient tous les informations ncessaires pour excuter 
+correctement un programme sur SMAKY. En particulier ([]:modifi par la 
+pseudoinstruction corrrespondante, {}:par dfaut):\ff;\ur08;\newtab 25mm, 40mm, 55mm;adresse	  nom (FOS)	contenudc. hexa.  0    0  OBXTYP	type du fichier excutable (2^:0=bin abs,1=relogeable){2}  1    1  OBXPRIO	priorit [.CODE] {D'23}  2    2  OBXCHK	checksum et checksum complment  2 (voir ci-dessous)  4    4  OBXLOAD	adresse de chargement [.LOC]  8    8  OBXSTA	adresse de start [.START] 12    C  OBXLG	\	longueur du binaire (bytes) 16   10  OBXSTK	longueur max. du stack [.CODE] {D'500} 20   14	\	rserve 24   18  OBXREV	rvision (majeure) [.REV] 25   19  OBXVER	version (version) [.REV] 26   1A	\	rserve 28   1C  OBXOVB	overlay base (pas utilis) 32   20  OBXOVL	overlay length (pas utilis) 36   24  OBXOVM	overlay maximum (pas utilis) 40   28  OBXOVN	overlay number (pas utilis) 64   40  OBXUNIT	units utilises (2^:0=displ,1=keyb,2=synth.) [.CODE] {7} 68   44  OBXDIS	dimensions fentre (min x, max x, min y, max y) [.CODE]	        	{D'10, D'2000, D'10, D'2000} 76   4C  OBXSYN	niveau haut-parleur [.CODE] {2} 78   4E  OBXGC	\	gnrateur de caractres [.CODE] {'*}	\	\	('* = gnrateur s'adapte  la grandeur de la fentre)128   80  OBXIDE	texte identificateur (nom du source, responsable) [.IDENT] \a:Le calcul du checksum (sur un byte) se fait de la manire suivante: le 
+checksum additionn  la somme des bytes plus le nombre de bytes plus les 
+reports doit donner zro. Ainsi on obtient pour les valeurs: H'00, H'FF et H'01 => H'FC (H'00+H'FF+H'01+3{nombre}+1{report} = H'04 -> H'FC).
